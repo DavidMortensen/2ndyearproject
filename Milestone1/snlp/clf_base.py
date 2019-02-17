@@ -18,9 +18,13 @@ def make_feature_vector(base_features,label):
     :rtype: dict
 
     '''
-    feat_dict = None
 
-    raise NotImplementedError
+    feat_dict = {(label, OFFSET) : 1}
+    
+    for (feat, counter) in base_features.items():
+        feat_dict[(label, feat)] =+ counter
+
+    return feat_dict
 
 # Deliverable 2.2
 def predict(base_features,weights,labels):
@@ -33,12 +37,29 @@ def predict(base_features,weights,labels):
     :returns: top scoring label, scores of all labels
     :rtype: string, dict
 
+    
+
+    scores = {}
+    for label in labels:
+        scores[label] = 0
+    
+    for [label, word], weight in weights.items():
+        count = base_features[word]
+        scores[label] += count * weight
+        
+    return argmax(scores),scores
     '''
-
-
-    raise NotImplementedError
-    #return argmax(scores),scores
-
+    scores = {}
+    base_features[OFFSET] = 1.0
+    for y in labels:
+        # get active features for a class
+        weights_feats = [ weights[(label,f)] for (label, f) in weights.keys() if label == y and f in base_features]
+        active_feats = [ base_features[feat] for feat in base_features if (y, feat) in weights ]
+        if not active_feats:
+            scores[y] = 0.0
+        else:
+            scores[y] = np.dot(active_feats, weights_feats)
+    return argmax(scores),scores
 
 ### helper_code
 def predict_all(x,weights,labels):

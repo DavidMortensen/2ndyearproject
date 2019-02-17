@@ -16,12 +16,16 @@ def build_linear(X_tr, Y_tr, loss, optimizer='sgd', metrics=['accuracy']):
     :returns: PyTorch linear model
     :rtype: PyTorch model
     '''
-    #change these
-    size1 = 99
-    size2 = 9
 
-    raise NotImplementedError
-
+    model = keras.models.Sequential()
+    model.add(Dense(4,
+                    activation='softmax',
+                    input_dim = X_tr.shape[1]))
+    model.compile(optimizer = optimizer,
+                    loss = loss, 
+                    metrics = metrics)
+    
+    return model
 
 def forward(model, X):
     """

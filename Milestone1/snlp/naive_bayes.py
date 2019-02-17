@@ -17,7 +17,14 @@ def get_corpus_counts(x,y,label):
 
     """
 
-    raise NotImplementedError
+    counter = Counter()
+
+    for index, instance in enumerate(x):
+        if y[index] == label:
+            for word in instance:
+                counter[word] += instance[word]
+
+    return counter
 
 # deliverable 3.2
 def estimate_pxy(x,y,label,smoothing,vocab):
@@ -31,11 +38,23 @@ def estimate_pxy(x,y,label,smoothing,vocab):
     :param vocab: list of words in vocabulary
     :returns: defaultdict of log probabilities per word
     :rtype: defaultdict of log probabilities per word
-
     '''
-    # computes P(x|y=label) for a specific label
-    raise NotImplementedError
+    #For some reason re-using the prev method, caused accuracy problems..
+    #edit: Obviously the prev method doesn't take full vocab into consideration.
+    #log_probs = get_corpus_counts(x, y, label)
 
+    # computes P(x|y=label) for a specific label
+    log_probs = defaultdict(float)
+    for instance, y in zip(x,y):
+        if y == label:
+            for word in vocab:
+                log_probs[word] += instance[word]
+
+    prob_c = sum(log_probs.values()) + len(vocab) * smoothing
+    for word in log_probs:
+        log_probs[word] = np.log((log_probs[word] + smoothing)/prob_c)
+
+    return log_probs
 
 # deliverable 3.3
 def estimate_nb(x,y,smoothing):
@@ -48,10 +67,20 @@ def estimate_nb(x,y,smoothing):
     :rtype: defaultdict 
 
     """
+    weights = defaultdict(float)
+    vocab = set([word for document in x for word in document])
+    class_count = Counter(y)
+    class_pxys = defaultdict()
 
-    labels = set(y)
+    for c in set(y):
+        weights[(c, OFFSET)] = np.log(class_count[c] / len(y))
+        class_pxys[c] = estimate_pxy(x, y, c, smoothing, vocab)
 
-    raise NotImplementedError
+        for c in class_pxys:
+            for word in class_pxys[c]:
+                weights[(c, word)] = class_pxys[c][word]
+
+    return weights
 
 
 ## helper code
@@ -73,11 +102,12 @@ def find_best_smoother(x_tr,y_tr,x_dv,y_dv,smoothers):
 
     '''
 
-    raise smoothers[best_idx]
+    dev_accuracy = []
 
+    for value in smoothers:
+        theta_nb = estimate_nb(x_tr, y_tr, value)
+        y_hat = clf_base.predict_all(x_dv, theta_nb, y_dv)
+        accuracy = evaluation.acc(y_hat, y_dv)
+        dev_accuracy.append(accuracy)
 
-
-
-
-
-
+    return (np.argmax(dev_accuracy), dev_accuracy)
