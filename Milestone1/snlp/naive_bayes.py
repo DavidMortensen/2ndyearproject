@@ -99,8 +99,8 @@ def find_best_smoother(x_tr,y_tr,x_dv,y_dv,smoothers):
     :param smoothers: list of smoothing values
     :returns: best smoothing value
     :rtype: float
-
     '''
+    
 
     dev_accuracy = []
 
@@ -111,3 +111,4 @@ def find_best_smoother(x_tr,y_tr,x_dv,y_dv,smoothers):
         dev_accuracy.append(accuracy)
 
     return (np.argmax(dev_accuracy), dev_accuracy)
+   
